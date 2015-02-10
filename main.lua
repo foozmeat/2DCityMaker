@@ -4,8 +4,8 @@ Inspired by http://gamedevelopment.tutsplus.com/tutorials/how-to-use-bsp-trees-t
 
 --]]
 
-globalCols = 80
-globalRows = 50
+globalCols = 60
+globalRows = 40
 
 require "BSPNode"
 

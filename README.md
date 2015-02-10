@@ -1,6 +1,8 @@
 # 2DCityMaker
 A 2D city map generator written in Lua.
 
+![screenshot](screenshot.png)
+
 ### Installation
 
 To make things easy the generator runs inside of [LÖVE 2D](https://love2d.org/). You'll need to download it and then drop this folder onto their app.

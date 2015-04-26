@@ -6,34 +6,52 @@ Inspired by http://gamedevelopment.tutsplus.com/tutorials/how-to-use-bsp-trees-t
 
 globalCols = 60
 globalRows = 40
+globalMapSize = globalCols * globalRows
+globalTerrainData = {}
+tileWidth = 16
+tileHeight = 16
 
 require "BSPNode"
+require "TerrainData"
+require "Terrain"
 
 function love.load()
   rng = love.math.newRandomGenerator()
   rng:setSeed(os.time())
+  
+  for i=1, globalMapSize do
+    globalTerrainData[i] = terrain_t:new()
+  end
+  
   buildMap()
 end
 
 function buildMap()
 
-  tileWidth = 15
-  tileHeight = 15
 
   windowHeight = globalRows * tileHeight
   windowWidth = globalCols * tileWidth
   
   love.window.setMode(windowWidth, windowHeight, {resizable=false, vsync=false})
-
-  tilemap = love.graphics.newImage("tilemap.png")
-  road = love.graphics.newQuad(0, 0, tileWidth, tileHeight, tilemap:getWidth(), tilemap:getHeight())
-  grass = love.graphics.newQuad(30, 0, tileWidth, tileHeight, tilemap:getWidth(), tilemap:getHeight())
-
-  GlobalMap = {}
   
-    -- make a full map of road tiles
-  for index=1,globalRows*globalCols do
-    table.insert(GlobalMap, road)
+  local mapIndex = 1
+  for mapY=1,globalRows do
+    for mapX=1,globalCols do
+      
+      -- init with default values then convert to a road
+      globalTerrainData[mapIndex] = Terrain(globalTerrainData[mapIndex])
+      globalTerrainData[mapIndex] = Road(globalTerrainData[mapIndex])
+      globalTerrainData[mapIndex].index = mapIndex
+      globalTerrainData[mapIndex].row = mapY
+      globalTerrainData[mapIndex].col = mapX
+      globalTerrainData[mapIndex].x = (mapX * tileWidth) - 16
+      globalTerrainData[mapIndex].y = (mapY * tileHeight) - 16
+
+--         print(tostring(globalTerrainData[mapIndex]))
+      -------
+      mapIndex = mapIndex + 1
+      
+    end
   end
 
   BSPNode:reset()
@@ -51,7 +69,7 @@ function buildMap()
       indexes = node.block:tileIndexes()
       
       for _,index in pairs(indexes) do
-        GlobalMap[index] = grass
+        globalTerrainData[index] = Terrain(globalTerrainData[index])
       end
     end
   end
@@ -63,11 +81,13 @@ function love.draw()
   tileIndex = 1
   for mapY=1,globalRows do
     for mapX=1,globalCols do
-      love.graphics.draw(tilemap, GlobalMap[tileIndex], (mapX - 1) * tileWidth, (mapY - 1) * tileHeight)
+      local tile = globalTerrainData[tileIndex]
+      
+      love.graphics.draw(tilemap, globalTerrainData[tileIndex]:image(), tile.x, tile.y)
       tileIndex = tileIndex + 1
 
 --       This will draw a grid over your map      
---       love.graphics.rectangle("line", (mapX - 1) * tileWidth, (mapY - 1) * tileHeight, tileWidth, tileHeight)
+      love.graphics.rectangle("line", (mapX - 1) * tileWidth, (mapY - 1) * tileHeight, tileWidth, tileHeight)
     end
   end
 end

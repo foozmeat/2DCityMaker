@@ -10,70 +10,32 @@ globalMapSize = globalCols * globalRows
 globalTerrainData = {}
 tileWidth = 16
 tileHeight = 16
+globalMap = {}
 
 require "BSPNode"
 require "TerrainData"
 require "Terrain"
+require "mapRegion"
+require "map"
 
 function love.load()
   rng = love.math.newRandomGenerator()
   rng:setSeed(os.time())
   
-  for i=1, globalMapSize do
-    globalTerrainData[i] = terrain_t:new()
-  end
-  
-  buildMap()
-end
-
-function buildMap()
-
-
   windowHeight = globalRows * tileHeight
   windowWidth = globalCols * tileWidth
   
   love.window.setMode(windowWidth, windowHeight, {resizable=false, vsync=false})
   
-  local mapIndex = 1
-  for mapY=1,globalRows do
-    for mapX=1,globalCols do
-      
-      -- init with default values then convert to a road
-      globalTerrainData[mapIndex] = Terrain(globalTerrainData[mapIndex])
-      globalTerrainData[mapIndex] = Road(globalTerrainData[mapIndex])
-      globalTerrainData[mapIndex].index = mapIndex
-      globalTerrainData[mapIndex].row = mapY
-      globalTerrainData[mapIndex].col = mapX
-      globalTerrainData[mapIndex].x = (mapX * tileWidth) - 16
-      globalTerrainData[mapIndex].y = (mapY * tileHeight) - 16
-
---         print(tostring(globalTerrainData[mapIndex]))
-      -------
-      mapIndex = mapIndex + 1
-      
-    end
+  for i=1, globalMapSize do
+    globalTerrainData[i] = terrain_t:new()
   end
 
-  BSPNode:reset()
+  globalMap = Map:new(0, 0, globalCols, globalRows)
   
-  -- Add the root BSP Node inset so there's a band of road around the perimeter
-  root = BSPNode:new({x=1, y=1, cols=globalCols-LANE_WIDTH, rows=globalRows-LANE_WIDTH})
-
-  root:buildTree()
-  root:buildBlocks()
+  globalMap:initTiles()
+  globalMap:buildBlocks()
   
-  -- fill in the blocks with grass
-  for _,node in pairs(BSPNode._allNodes) do
-    
-    if node.block then
-      indexes = node.block:tileIndexes()
-      
-      for _,index in pairs(indexes) do
-        globalTerrainData[index] = Terrain(globalTerrainData[index])
-      end
-    end
-  end
-
 end
 
 function love.draw()
